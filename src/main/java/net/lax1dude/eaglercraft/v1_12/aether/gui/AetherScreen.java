@@ -1,15 +1,13 @@
 package net.lax1dude.eaglercraft.v1_12.aether.gui;
 
 import net.lax1dude.eaglercraft.v1_12.aether.theme.AetherTheme;
-import net.lax1dude.eaglercraft.v1_12.aether.config.AetherConfig;
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 
 /**
- * AetherScreen adapted for Eaglercraft 1.12
+ * AetherScreen adapted for Eaglercraft 1.12 with eased open animation.
  */
-public class AetherScreen extends GuiScreen {
+public class AetherScreen extends net.minecraft.client.gui.GuiScreen {
     private final Minecraft mc = Minecraft.getMinecraft();
     private final FontRenderer fr = mc.fontRenderer;
 
@@ -22,14 +20,13 @@ public class AetherScreen extends GuiScreen {
     public void initGui() {
         this.openProgress = 0f; this.opening = true;
         this.panelManager = new AetherPanelManager(this.width, this.height);
-        // attempt to load saved layout
-        try { AetherConfig.loadPanelLayout(this.panelManager); } catch (Throwable t) {}
+        try { net.lax1dude.eaglercraft.v1_12.aether.config.AetherConfig.loadPanelLayout(this.panelManager); } catch (Throwable t) {}
     }
 
     @Override
     public void updateScreen() {
         if (opening) {
-            openProgress += 0.08f;
+            openProgress = net.lax1dude.eaglercraft.v1_12.aether.util.AnimUtils.approach(openProgress, 1f, 0.08f);
             if (openProgress >= 1f) { openProgress = 1f; opening = false; }
         }
     }
@@ -39,13 +36,8 @@ public class AetherScreen extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
-        // First let components handle the key. If consumed, do nothing else.
         if (panelManager != null && panelManager.keyTyped(typedChar, keyCode)) return;
-        // Close on ESC only if no expanded controls
-        if (keyCode == 1) { // ESC
-            this.mc.displayGuiScreen(null);
-            return;
-        }
+        if (keyCode == 1) { this.mc.displayGuiScreen(null); return; }
         super.keyTyped(typedChar, keyCode);
     }
 
@@ -58,16 +50,18 @@ public class AetherScreen extends GuiScreen {
     @Override
     public void handleMouseInput() {
         super.handleMouseInput();
-        try {
-            int d = org.lwjgl.input.Mouse.getDWheel();
-            if (d != 0 && panelManager != null) panelManager.handleMouseScroll(d > 0 ? 1 : -1);
-        } catch (Throwable t) {}
+        try { int d = org.lwjgl.input.Mouse.getDWheel(); if (d != 0 && panelManager != null) panelManager.handleMouseScroll(d > 0 ? 1 : -1); } catch (Throwable t) {}
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         drawDefaultBackground();
-        drawDimOverlay(0x88000000);
+        // apply easing for dim overlay alpha
+        float eased = net.lax1dude.eaglercraft.v1_12.aether.util.AnimUtils.easeOutCubic(openProgress);
+        int baseAlpha = 0x88; int a = Math.max(0, Math.min(255, (int)(baseAlpha * eased)));
+        int overlay = (a << 24);
+        drawRect(0,0,this.width,this.height, overlay);
+
         int headerY = 20; int headerHeight = 48; int w = this.width;
         String title = "✦ AETHER";
         drawCenteredString(fr, title, w/2, headerY + 8, AetherTheme.TEXT);
@@ -81,9 +75,6 @@ public class AetherScreen extends GuiScreen {
     @Override
     public void onGuiClosed() {
         super.onGuiClosed();
-        // Persist layout
-        try { if (panelManager != null) AetherConfig.savePanelLayout(panelManager); } catch (Throwable t) {}
+        try { if (panelManager != null) net.lax1dude.eaglercraft.v1_12.aether.config.AetherConfig.savePanelLayout(panelManager); } catch (Throwable t) {}
     }
-
-    private void drawDimOverlay(int color) { drawRect(0,0,this.width,this.height,color); }
 }
