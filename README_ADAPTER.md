@@ -1,36 +1,49 @@
-# Aether Client — GUI Scaffold
+# Aether GUI — progress and testing
 
-This branch adds an initial scaffold for the Aether ClickGUI UI (Phase 2–3 initial commit).
+This file lists the current state of the feature/aether-gui branch and how to test it.
 
-Goals
-- Provide a GuiScreen-based AetherScreen to integrate into Eaglercraft 1.8.x builds.
-- Provide a small theme constants class and a simple config manager stub.
-- Provide integration instructions for porting these classes into an Eaglercraft build.
+Files added so far (phase 2–4):
+- src/main/java/io/ishowrnf/aether/gui/AetherScreen.java
+- src/main/java/io/ishowrnf/aether/gui/AetherPanel.java
+- src/main/java/io/ishowrnf/aether/gui/AetherPanelManager.java
+- src/main/java/io/ishowrnf/aether/gui/components/AetherComponent.java
+- src/main/java/io/ishowrnf/aether/gui/components/AetherToggle.java
+- src/main/java/io/ishowrnf/aether/gui/components/AetherSlider.java
+- src/main/java/io/ishowrnf/aether/theme/AetherTheme.java
+- src/main/java/io/ishowrnf/aether/theme/AetherThemeManager.java
+- src/main/java/io/ishowrnf/aether/config/AetherConfigManager.java
+- assets/logo/aether_logo.svg
 
-Important
-- This scaffold does NOT include any Minecraft proprietary assets.
-- The module system and full components are stubs. This is an opinionated starting point.
-
-Files added (overview)
-- src/main/java/io/ishowrnf/aether/gui/AetherScreen.java — GuiScreen subclass with basic header, dim background, open animation, ESC handling, and placeholder panels.
-- src/main/java/io/ishowrnf/aether/theme/AetherTheme.java — theme color constants matching the Aether palette.
-- src/main/java/io/ishowrnf/aether/config/AetherConfigManager.java — simple properties-based save/load stub for GUI config.
-- assets/logo/aether_logo.svg — placeholder vector logo.
-- README_ADAPTER.md — instructions to port these files into the Eaglercraft source and how to open the GUI in-game.
-
-How to test
-- Copy the `io.ishowrnf.aether.*` Java files into your Eaglercraft 1.8.8 sources (matching package path). Then call:
+What to test locally in an Eaglercraft dev environment
+1. Merge or copy the `io.ishowrnf.aether` package files into the Eaglercraft sources under `sources/main/java/`.
+2. From any place with access to the Minecraft instance (e.g., a custom key handler or main menu), call:
 
 ```java
-// Example: open the Aether GUI from anywhere with access to Minecraft instance
 Minecraft.getMinecraft().displayGuiScreen(new io.ishowrnf.aether.gui.AetherScreen());
 ```
 
-- Add a KeyBinding or input hook for RIGHT_SHIFT to open the GUI.
+3. When the GUI opens you should see a dim overlay, centered AETHER title, and four panels with placeholder modules. You can:
+   - Click a module toggle to toggle its state visually.
+   - Drag a panel by its title bar.
+   - Resize a panel by dragging the bottom-right corner.
+   - Drag sliders by clicking/dragging their handles.
+   - Scroll inside a panel using the mouse wheel when over it (handled per-panel).
 
-Next steps
-- Implement component library (Toggles, Sliders, Dropdowns, ColorPicker, Keybind UI, Tooltips, Notifications).
-- Implement data-driven module system and config persistence with JSON.
-- Implement animations, dragging, resizing, scissoring/clipping utilities.
+Notes & limitations
+- This is a working UI scaffold but not a finished product. Missing:
+  - Rounded rectangle helpers
+  - Proper scissoring/clipping via GL scissor; the current implementation uses simple Y-range checks to avoid rendering off-panel elements.
+  - Dropdowns, color picker, keybind selector, theme editor, notifications, tooltips
+  - Persistence beyond the simple properties file (AetherConfigManager)
+  - Accessibility keyboard navigation
+  - Animation refinements and polished visuals
 
-License: MIT (same as repo)
+Next steps (I will implement automatically unless you ask otherwise):
+1. Rounded rect utility and scissoring for proper clipping.
+2. Implement AetherDropdown, AetherColorPicker, AetherKeybind components.
+3. Notification system and toasts.
+4. Theme editor UI and persistence for themes.
+5. Save/Load config using JSON for panel positions/sizes and module states.
+6. Open animation polish and micro transitions.
+
+If you want me to stop or change priorities, say so. Otherwise I will continue implementing the remaining components and persistence and push incremental commits to feature/aether-gui.
