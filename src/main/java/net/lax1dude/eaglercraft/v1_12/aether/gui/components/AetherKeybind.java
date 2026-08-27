@@ -3,6 +3,7 @@ package net.lax1dude.eaglercraft.v1_12.aether.gui.components;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.lax1dude.eaglercraft.v1_12.aether.theme.AetherTheme;
+import net.lax1dude.eaglercraft.v1_12.aether.key.AetherKeybindManager;
 
 /**
  * Simple keybind selector for 1.12
@@ -24,5 +25,7 @@ public class AetherKeybind extends AetherComponent {
         if (!listening) return; if (keyCode == 1) { listening = false; return; }
         String name = net.minecraft.client.settings.KeyBinding.getKeyName(keyCode); if (name == null) name = String.valueOf(keyCode);
         boundKey = name; listening = false;
+        // persist the selected GUI key immediately
+        try { AetherKeybindManager.setGuiKey(boundKey); } catch (Throwable t) {}
     }
 }

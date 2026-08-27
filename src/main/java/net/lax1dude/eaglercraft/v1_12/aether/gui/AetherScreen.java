@@ -1,7 +1,7 @@
 package net.lax1dude.eaglercraft.v1_12.aether.gui;
 
 import net.lax1dude.eaglercraft.v1_12.aether.theme.AetherTheme;
-import net.lax1dude.eaglercraft.v1_12.aether.config.AetherConfigManager;
+import net.lax1dude.eaglercraft.v1_12.aether.config.AetherConfig;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -22,6 +22,8 @@ public class AetherScreen extends GuiScreen {
     public void initGui() {
         this.openProgress = 0f; this.opening = true;
         this.panelManager = new AetherPanelManager(this.width, this.height);
+        // attempt to load saved layout
+        try { AetherConfig.loadPanelLayout(this.panelManager); } catch (Throwable t) {}
     }
 
     @Override
@@ -74,6 +76,13 @@ public class AetherScreen extends GuiScreen {
         if (panelManager == null) panelManager = new AetherPanelManager(this.width, this.height);
         panelManager.render(mouseX, mouseY, partialTicks);
         super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+
+    @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
+        // Persist layout
+        try { if (panelManager != null) AetherConfig.savePanelLayout(panelManager); } catch (Throwable t) {}
     }
 
     private void drawDimOverlay(int color) { drawRect(0,0,this.width,this.height,color); }

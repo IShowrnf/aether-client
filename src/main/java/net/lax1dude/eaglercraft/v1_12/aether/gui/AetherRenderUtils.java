@@ -1,19 +1,42 @@
 package net.lax1dude.eaglercraft.v1_12.aether.gui;
 
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.FontRenderer;
-import net.lax1dude.eaglercraft.v1_12.aether.theme.AetherTheme;
 
-public class AetherRenderUtils {
+/**
+ * Minor render polish: improved rounded rect outline and a subtle shadow helper.
+ */
+public final class AetherRenderUtils {
     private AetherRenderUtils() {}
 
     public static void drawRoundedRect(int x, int y, int w, int h, int radius, int color) {
+        // center
         Gui.drawRect(x + radius, y, x + w - radius, y + h, color);
         Gui.drawRect(x, y + radius, x + w, y + h - radius, color);
+        // corners
         Gui.drawRect(x, y, x + radius, y + radius, color);
         Gui.drawRect(x + w - radius, y, x + w, y + radius, color);
         Gui.drawRect(x, y + h - radius, x + radius, y + h, color);
         Gui.drawRect(x + w - radius, y + h - radius, x + w, y + h, color);
+    }
+
+    public static void drawRoundedRectOutline(int x, int y, int w, int h, int radius, int color) {
+        Gui.drawRect(x, y, x + w, y + 1, color);
+        Gui.drawRect(x, y + h - 1, x + w, y + h, color);
+        Gui.drawRect(x, y, x + 1, y + h, color);
+        Gui.drawRect(x + w - 1, y, x + w, y + h, color);
+    }
+
+    public static void drawDropShadow(int x, int y, int w, int h, int blur, int color) {
+        // Simple shadow: draw several inset translucent rectangles
+        int alpha = (color >> 24) & 0xFF;
+        for (int i = 1; i <= blur; ++i) {
+            int a = (alpha * (blur - i + 1)) / (blur + 1);
+            int c = (a << 24) | (color & 0x00FFFFFF);
+            Gui.drawRect(x - i, y - i, x + w + i, y, c);
+            Gui.drawRect(x - i, y + h, x + w + i, y + h + i, c);
+            Gui.drawRect(x - i, y, x, y + h, c);
+            Gui.drawRect(x + w, y, x + w + i, y + h, c);
+        }
     }
 
     public static void enableScissor(int x, int y, int w, int h) {
