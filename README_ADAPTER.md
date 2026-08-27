@@ -1,49 +1,36 @@
-# Aether GUI — progress and testing
+# Aether GUI — progress and testing (updated)
 
-This file lists the current state of the feature/aether-gui branch and how to test it.
+This branch contains an interactive, incremental implementation of the Aether ClickGUI for Eaglercraft 1.8-style clients.
 
-Files added so far (phase 2–4):
-- src/main/java/io/ishowrnf/aether/gui/AetherScreen.java
-- src/main/java/io/ishowrnf/aether/gui/AetherPanel.java
-- src/main/java/io/ishowrnf/aether/gui/AetherPanelManager.java
-- src/main/java/io/ishowrnf/aether/gui/components/AetherComponent.java
-- src/main/java/io/ishowrnf/aether/gui/components/AetherToggle.java
-- src/main/java/io/ishowrnf/aether/gui/components/AetherSlider.java
-- src/main/java/io/ishowrnf/aether/theme/AetherTheme.java
-- src/main/java/io/ishowrnf/aether/theme/AetherThemeManager.java
-- src/main/java/io/ishowrnf/aether/config/AetherConfigManager.java
-- assets/logo/aether_logo.svg
+Recent additions (phase 4–5):
+- Rendering utilities: src/main/java/io/ishowrnf/aether/gui/AetherRenderUtils.java
+- Dropdown component: src/main/java/io/ishowrnf/aether/gui/components/AetherDropdown.java
+- Color picker component: src/main/java/io/ishowrnf/aether/gui/components/AetherColorPicker.java
+- Keybind selector component: src/main/java/io/ishowrnf/aether/gui/components/AetherKeybind.java
+- Notification manager: src/main/java/io/ishowrnf/aether/gui/AetherNotificationManager.java
 
-What to test locally in an Eaglercraft dev environment
-1. Merge or copy the `io.ishowrnf.aether` package files into the Eaglercraft sources under `sources/main/java/`.
-2. From any place with access to the Minecraft instance (e.g., a custom key handler or main menu), call:
+How to test
+1. Merge the `io.ishowrnf.aether` package files into an Eaglercraft sources tree under `sources/main/java/`.
+2. Open the GUI in-game:
 
 ```java
 Minecraft.getMinecraft().displayGuiScreen(new io.ishowrnf.aether.gui.AetherScreen());
 ```
 
-3. When the GUI opens you should see a dim overlay, centered AETHER title, and four panels with placeholder modules. You can:
-   - Click a module toggle to toggle its state visually.
-   - Drag a panel by its title bar.
-   - Resize a panel by dragging the bottom-right corner.
-   - Drag sliders by clicking/dragging their handles.
-   - Scroll inside a panel using the mouse wheel when over it (handled per-panel).
+3. Interact with panels and components:
+- Click toggles to switch them.
+- Drag sliders.
+- Click a dropdown to expand and pick options.
+- Click the color picker to open presets and choose colors.
+- Click a keybind control to enter listen mode; then press a key (the parent AetherScreen must forward keyTyped events to focused components for full functionality).
+- Notifications: You can create notifications by adding calls to AetherNotificationManager.addNotification from code.
 
-Notes & limitations
-- This is a working UI scaffold but not a finished product. Missing:
-  - Rounded rectangle helpers
-  - Proper scissoring/clipping via GL scissor; the current implementation uses simple Y-range checks to avoid rendering off-panel elements.
-  - Dropdowns, color picker, keybind selector, theme editor, notifications, tooltips
-  - Persistence beyond the simple properties file (AetherConfigManager)
-  - Accessibility keyboard navigation
-  - Animation refinements and polished visuals
+Notes & next work
+- Scissoring is implemented as a no-op fallback; replace enableScissor/disableScissor in AetherRenderUtils with the Eaglercraft engine's scissor calls for accurate clipping.
+- I will next implement:
+  - Proper scissor usage and rounded rect shader-style rendering where available.
+  - Full color picker with SV square and hue slider.
+  - Keybind persistence and central keybinding manager for the GUI key (RIGHT_SHIFT by default).
+  - Theme editor UI + config persistence to JSON.
 
-Next steps (I will implement automatically unless you ask otherwise):
-1. Rounded rect utility and scissoring for proper clipping.
-2. Implement AetherDropdown, AetherColorPicker, AetherKeybind components.
-3. Notification system and toasts.
-4. Theme editor UI and persistence for themes.
-5. Save/Load config using JSON for panel positions/sizes and module states.
-6. Open animation polish and micro transitions.
-
-If you want me to stop or change priorities, say so. Otherwise I will continue implementing the remaining components and persistence and push incremental commits to feature/aether-gui.
+If you'd like me to stop or reprioritize, tell me now. Otherwise I will continue implementing scissor/clipping and theme/config persistence and push updates to feature/aether-gui.
