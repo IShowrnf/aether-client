@@ -9,13 +9,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 
 /**
- * AetherScreen — initial GuiScreen scaffold for the Aether ClickGUI.
- *
- * This class is intentionally minimal and focuses on lifecycle integration
- * with Eaglercraft / Minecraft 1.8-style GuiScreen. It draws a dim background,
- * a header with the Aether logo/title, and placeholder category panels.
- *
- * Extend this with component rendering (panels, toggles, sliders, pickers).
+ * AetherScreen — GuiScreen scaffold wired to the panel manager and input forwarding.
  */
 public class AetherScreen extends GuiScreen {
 
@@ -26,14 +20,18 @@ public class AetherScreen extends GuiScreen {
     private float openProgress = 0f;
     private boolean opening = true;
 
+    private AetherPanelManager panelManager;
+    private AetherNotificationManager notifications;
+
     public AetherScreen() {
     }
 
     @Override
     public void initGui() {
-        // Called when the screen is displayed or when the resolution changes.
-        // Load config, prepare panel positions here.
-        // Example: read gui scale or panel positions from AetherConfigManager
+        this.openProgress = 0f; this.opening = true;
+        this.panelManager = new AetherPanelManager(this.width, this.height);
+        this.notifications = new AetherNotificationManager(fr);
+        // Load config if needed
     }
 
     @Override
@@ -57,16 +55,42 @@ public class AetherScreen extends GuiScreen {
     protected void keyTyped(char typedChar, int keyCode) {
         // Close on ESC
         if (keyCode == 1) { // ESC
+            // If any child has expanded dropdowns or color pickers, close them first in panelManager
+            // For now, simply close screen
             this.mc.displayGuiScreen(null);
             return;
         }
+        // Forward key input to focused components (e.g., keybind selectors)
+        if (panelManager != null) panelManager.keyTyped(typedChar, keyCode);
         super.keyTyped(typedChar, keyCode);
     }
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
         super.mouseClicked(mouseX, mouseY, mouseButton);
-        // TODO: dispatch click to panels/components
+        if (panelManager != null) panelManager.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    protected void mouseMovedOrUp(int mouseX, int mouseY, int state) {
+        super.mouseMovedOrUp(mouseX, mouseY, state);
+        if (panelManager != null) panelManager.mouseReleased(mouseX, mouseY, state);
+    }
+
+    @Override
+    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+        if (panelManager != null) panelManager.mouseDragged(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+    }
+
+    @Override
+    public void handleMouseInput() {
+        super.handleMouseInput();
+        // Mouse wheel
+        int dw = net.minecraft.client.Mouse.getDWheel();
+        if (dw != 0 && panelManager != null) {
+            panelManager.handleMouseScroll(dw > 0 ? 1 : -1);
+        }
     }
 
     @Override
@@ -75,17 +99,10 @@ public class AetherScreen extends GuiScreen {
         drawDefaultBackground();
         drawDimOverlay(0x88000000); // subtle dim
 
-        // Compute layout
-        ScaledResolution sr = new ScaledResolution(mc);
-        int w = this.width;
-        int h = this.height;
-
         // Header
         int headerY = 20;
         int headerHeight = 48;
-
-        // Slight scale animation based on openProgress
-        float scale = 0.96f + 0.04f * openProgress; // 0.96 -> 1.0
+        int w = this.width;
 
         // Draw centered header text
         String title = "✦ AETHER";
@@ -98,49 +115,14 @@ public class AetherScreen extends GuiScreen {
         int lineY = headerY + headerHeight - 6;
         drawRect(lineX, lineY, lineX + lineW, lineY + 1, AetherTheme.BORDER);
 
-        // Placeholder category panels (4 panels across)
-        int cols = 4;
-        int gap = 12;
-        int panelWidth = (w - (cols + 1) * gap) / cols;
-        int panelHeight = (int) (h * 0.55f);
-        int startY = headerY + headerHeight + 12;
+        // Panel manager renders panels and their children
+        if (panelManager == null) panelManager = new AetherPanelManager(this.width, this.height);
+        panelManager.render(mouseX, mouseY, partialTicks);
 
-        for (int i = 0; i < cols; ++i) {
-            int px = gap + i * (panelWidth + gap);
-            int py = startY;
-            // Panel background
-            drawRect(px, py, px + panelWidth, py + panelHeight, AetherTheme.PANEL);
-            // Panel border
-            drawRect(px, py, px + panelWidth, py + 1, AetherTheme.BORDER);
-            // Category title
-            String cat = getCategoryName(i);
-            int tx = px + 10;
-            int ty = py + 8;
-            fr.drawString(cat, tx, ty, AetherTheme.TEXT, false);
-            // Simple placeholder module rows
-            for (int r = 0; r < 8; ++r) {
-                int rowY = ty + 14 + r * 16;
-                String moduleName = "Module " + (r + 1);
-                fr.drawString(moduleName, tx, rowY, AetherTheme.TEXT, false);
-                // Toggle indicator (circle) on right
-                int iconX = px + panelWidth - 14;
-                int iconY = rowY - 2;
-                drawRect(iconX - 6, iconY, iconX, iconY + 8, AetherTheme.BORDER);
-            }
-        }
-
-        // Draw hover tooltips, dropdown overlays, etc (TODO)
+        // Notifications
+        if (notifications != null) notifications.render(this.width, this.height);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    private String getCategoryName(int idx) {
-        switch (idx) {
-            case 0: return "COMBAT";
-            case 1: return "MOVEMENT";
-            case 2: return "PLAYER";
-            default: return "VISUAL";
-        }
     }
 
     private void drawDimOverlay(int color) {
