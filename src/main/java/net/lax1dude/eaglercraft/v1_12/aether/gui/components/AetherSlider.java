@@ -21,4 +21,20 @@ public class AetherSlider extends AetherComponent {
     @Override public void mouseReleased(int mouseX, int mouseY, int button) { dragging = false; }
     @Override public void mouseDragged(int mouseX, int mouseY, int button, long timeSinceClick) { if (dragging) updateValueFromMouse(mouseX); }
     private void updateValueFromMouse(int mouseX) { int trackX = x + 4; int trackW = width - 8; float t = (float)(mouseX - trackX) / (float)trackW; t = Math.max(0f, Math.min(1f, t)); this.value = min + t * (max - min); }
+
+    @Override
+    public boolean keyTyped(char typedChar, int keyCode) {
+        if (!isFocused()) return false;
+        // left=203, right=205, page up/down could be 201/209
+        float step = (max - min) * 0.02f; // 2%
+        if (keyCode == 203) { setValue(value - step); return true; }
+        if (keyCode == 205) { setValue(value + step); return true; }
+        if (keyCode == 200) { setValue(value + step); return true; }
+        if (keyCode == 208) { setValue(value - step); return true; }
+        if (keyCode == 1) { return false; }
+        return false;
+    }
+
+    @Override
+    public void onFocusLost() { dragging = false; }
 }

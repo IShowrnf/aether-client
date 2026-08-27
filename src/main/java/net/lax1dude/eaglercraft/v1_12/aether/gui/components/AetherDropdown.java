@@ -62,4 +62,32 @@ public class AetherDropdown extends AetherComponent {
 
     @Override
     public void mouseDragged(int mouseX, int mouseY, int button, long timeSinceClick) {}
+
+    @Override
+    public boolean keyTyped(char typedChar, int keyCode) {
+        if (!isFocused()) return false;
+        // LWJGL key codes: up=200, down=208, enter=28, esc=1, left=203, right=205
+        if (!expanded) {
+            if (keyCode == 28 || keyCode == 57) { // enter or space
+                expanded = true; return true;
+            }
+            return false;
+        }
+        if (keyCode == 200) { // up
+            selectedIndex = Math.max(0, selectedIndex - 1); return true;
+        }
+        if (keyCode == 208) { // down
+            selectedIndex = Math.min(options.size() - 1, selectedIndex + 1); return true;
+        }
+        if (keyCode == 28) { // enter
+            expanded = false; return true;
+        }
+        if (keyCode == 1) { // esc
+            expanded = false; return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onFocusLost() { expanded = false; }
 }

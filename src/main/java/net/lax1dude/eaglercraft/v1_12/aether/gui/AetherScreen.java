@@ -37,11 +37,13 @@ public class AetherScreen extends GuiScreen {
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) {
+        // First let components handle the key. If consumed, do nothing else.
+        if (panelManager != null && panelManager.keyTyped(typedChar, keyCode)) return;
+        // Close on ESC only if no expanded controls
         if (keyCode == 1) { // ESC
             this.mc.displayGuiScreen(null);
             return;
         }
-        if (panelManager != null) panelManager.keyTyped(typedChar, keyCode);
         super.keyTyped(typedChar, keyCode);
     }
 

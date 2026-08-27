@@ -19,8 +19,15 @@ public abstract class AetherComponent {
     public void setFocused(boolean f) { this.focused = f; }
     public boolean isFocused() { return focused; }
 
+    // Rendering and input hooks
     public abstract void render(int mouseX, int mouseY, float partialTicks);
     public abstract void mouseClicked(int mouseX, int mouseY, int button);
     public abstract void mouseReleased(int mouseX, int mouseY, int button);
     public abstract void mouseDragged(int mouseX, int mouseY, int button, long timeSinceClick);
+
+    // Keyboard input: return true if the event was consumed
+    public boolean keyTyped(char typedChar, int keyCode) { return false; }
+
+    // Called when focus is lost so components can cancel transient state
+    public void onFocusLost() {}
 }

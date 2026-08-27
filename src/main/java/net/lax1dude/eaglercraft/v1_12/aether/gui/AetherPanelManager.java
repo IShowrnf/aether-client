@@ -38,14 +38,27 @@ public class AetherPanelManager {
     public void mouseDragged(int mouseX, int mouseY, int button, long time) { for (AetherPanel p : panels) p.mouseDragged(mouseX, mouseY, button, time); }
     public void handleMouseScroll(int delta) { for (AetherPanel p : panels) p.handleMouseScroll(delta); }
 
-    public void keyTyped(char typedChar, int keyCode) {
+    // Forward keyTyped to focused components. Return true if consumed by any component.
+    public boolean keyTyped(char typedChar, int keyCode) {
+        boolean consumed = false;
         for (AetherPanel p : panels) {
             for (net.lax1dude.eaglercraft.v1_12.aether.gui.components.AetherComponent c : p.getChildren()) {
-                if (c instanceof net.lax1dude.eaglercraft.v1_12.aether.gui.components.AetherKeybind && c.isFocused()) {
-                    ((net.lax1dude.eaglercraft.v1_12.aether.gui.components.AetherKeybind)c).onKeyTyped(typedChar, keyCode);
-                    return;
+                if (c.isFocused()) {
+                    if (c.keyTyped(typedChar, keyCode)) return true;
                 }
             }
         }
+        // If ESC pressed, ensure expanded controls close instead of closing screen
+        if (keyCode == 1) {
+            boolean closed = false;
+            for (AetherPanel p : panels) {
+                for (net.lax1dude.eaglercraft.v1_12.aether.gui.components.AetherComponent c : p.getChildren()) {
+                    c.onFocusLost();
+                    closed = true;
+                }
+            }
+            return closed;
+        }
+        return consumed;
     }
 }
