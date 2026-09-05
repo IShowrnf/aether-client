@@ -7,6 +7,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
+import org.lwjgl.input.Mouse;
 
 /**
  * AetherScreen — GuiScreen scaffold wired to the panel manager and input forwarding.
@@ -87,7 +88,7 @@ public class AetherScreen extends GuiScreen {
     public void handleMouseInput() {
         super.handleMouseInput();
         // Mouse wheel
-        int dw = net.minecraft.client.Mouse.getDWheel();
+        int dw = Mouse.getDWheel();
         if (dw != 0 && panelManager != null) {
             panelManager.handleMouseScroll(dw > 0 ? 1 : -1);
         }
